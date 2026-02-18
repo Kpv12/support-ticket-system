@@ -56,14 +56,12 @@ class TicketStatsView(APIView):
             Ticket.objects
             .values('priority')
             .annotate(count=Count('id'))
-            .values_list('priority', 'count')
         )
 
         category_breakdown = dict(
             Ticket.objects
             .values('category')
             .annotate(count=Count('id'))
-            .values_list('category', 'count')
         )
 
         data = {
@@ -81,7 +79,7 @@ class TicketClassifyView(APIView):
 
     def post(self, request):
 
-        description = request.data.get('description')
+        description = request.data.get('description', '').lower()
 
         if not description:
             return Response(
@@ -89,8 +87,40 @@ class TicketClassifyView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Placeholder (LLM integration next step)
+        # ---------- Rule-Based Classification ---------- #
+
+        category = "general"
+        priority = "low"
+
+        # Billing
+        if any(word in description for word in [
+            "payment", "billing", "invoice", "refund", "charge"
+        ]):
+            category = "billing"
+            priority = "high"
+
+        # Account
+        elif any(word in description for word in [
+            "login", "password", "signup", "account", "otp"
+        ]):
+            category = "account"
+            priority = "medium"
+
+        # Technical
+        elif any(word in description for word in [
+            "error", "crash", "bug", "issue", "not working", "fail"
+        ]):
+            category = "technical"
+            priority = "high"
+
+        # Feature
+        elif any(word in description for word in [
+            "feature", "request", "add", "improve", "update"
+        ]):
+            category = "feature"
+            priority = "low"
+
         return Response({
-            "suggested_category": None,
-            "suggested_priority": None
+            "suggested_category": category,
+            "suggested_priority": priority
         })

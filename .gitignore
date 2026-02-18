@@ -1,15 +1,44 @@
+# ----------------------
 # Python
+# ----------------------
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.env
 env/
 venv/
 
-# Node
+# ----------------------
+# Django
+# ----------------------
+db.sqlite3
+*.sqlite3
+staticfiles/
+media/
+
+# ----------------------
+# Node / Frontend
+# ----------------------
 node_modules/
 dist/
+build/
 
-# Env
-.env
-
-# Docker
+# ----------------------
+# Logs
+# ----------------------
 *.log
+
+# ----------------------
+# OS / Editor
+# ----------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ----------------------
+# Docker
+# ----------------------
+*.env
+docker-compose.override.yml
