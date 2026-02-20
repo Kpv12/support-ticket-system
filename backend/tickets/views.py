@@ -9,6 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Ticket
 from .serializers import TicketSerializer
+from .hf_llm import classify_ticket_hf
 
 
 class TicketViewSet(viewsets.ModelViewSet):
@@ -79,7 +80,7 @@ class TicketClassifyView(APIView):
 
     def post(self, request):
 
-        description = request.data.get('description', '').lower()
+        description = request.data.get("description", "").strip()
 
         if not description:
             return Response(
@@ -87,38 +88,7 @@ class TicketClassifyView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # ---------- Rule-Based Classification ---------- #
-
-        category = "general"
-        priority = "low"
-
-        # Billing
-        if any(word in description for word in [
-            "payment", "billing", "invoice", "refund", "charge"
-        ]):
-            category = "billing"
-            priority = "high"
-
-        # Account
-        elif any(word in description for word in [
-            "login", "password", "signup", "account", "otp"
-        ]):
-            category = "account"
-            priority = "medium"
-
-        # Technical
-        elif any(word in description for word in [
-            "error", "crash", "bug", "issue", "not working", "fail"
-        ]):
-            category = "technical"
-            priority = "high"
-
-        # Feature
-        elif any(word in description for word in [
-            "feature", "request", "add", "improve", "update"
-        ]):
-            category = "feature"
-            priority = "low"
+        category, priority = classify_ticket_hf(description)
 
         return Response({
             "suggested_category": category,
