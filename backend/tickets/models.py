@@ -4,9 +4,8 @@ from django.db import models
 class Ticket(models.Model):
 
     CATEGORY_CHOICES = [
-        ('billing', 'Billing'),
         ('technical', 'Technical'),
-        ('account', 'Account'),
+        ('billing', 'Billing'),
         ('general', 'General'),
     ]
 
@@ -14,55 +13,37 @@ class Ticket(models.Model):
         ('low', 'Low'),
         ('medium', 'Medium'),
         ('high', 'High'),
-        ('critical', 'Critical'),
     ]
 
     STATUS_CHOICES = [
-        ('open', 'Open'),
-        ('in_progress', 'In Progress'),
-        ('resolved', 'Resolved'),
-        ('closed', 'Closed'),
+    ('open', 'Open'),
+    ('in_progress', 'In Progress'),
+    ('resolved', 'Resolved'),
     ]
 
-    title = models.CharField(
-        max_length=200,
-        null=False,
-        blank=False
-    )
 
-    description = models.TextField(
-        null=False,
-        blank=False
-    )
+    title = models.CharField(max_length=255)
+    description = models.TextField()
 
     category = models.CharField(
         max_length=20,
         choices=CATEGORY_CHOICES,
-        null=False,
-        blank=False
+        default='technical'
     )
 
     priority = models.CharField(
         max_length=20,
         choices=PRIORITY_CHOICES,
-        null=False,
-        blank=False
+        default='medium'
     )
 
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='open',
-        null=False,
-        blank=False
+        default='open'
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    class Meta:
-        ordering = ['-created_at']
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} ({self.status})"
+        return self.title

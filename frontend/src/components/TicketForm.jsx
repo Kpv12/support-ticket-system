@@ -1,100 +1,92 @@
-import { useState, useEffect } from "react";
-import { createTicket, classifyTicket } from "../api";
+import { useState } from "react";
+import axios from "axios";
 
-function TicketForm({ onSuccess }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [priority, setPriority] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+function TicketForm({ onTicketCreated }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: "technical",
+    priority: "medium",
+    status: "open",
+  });
 
-  useEffect(() => {
-    const delay = setTimeout(async () => {
-      if (!description.trim()) return;
-
-      setLoading(true);
-      try {
-        const res = await classifyTicket(description);
-        setCategory(res.data.suggested_category);
-        setPriority(res.data.suggested_priority);
-      } catch (err) {
-        console.log("Classification failed");
-      }
-      setLoading(false);
-    }, 600);
-
-    return () => clearTimeout(delay);
-  }, [description]);
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setSubmitting(true);
-
     try {
-      await createTicket({
-        title,
-        description,
-        category,
-        priority,
+      const res = await axios.post(
+        "http://localhost:8000/api/tickets/",
+        formData
+      );
+
+      if (onTicketCreated) {
+        onTicketCreated(res.data);
+      }
+
+      setFormData({
+        title: "",
+        description: "",
+        category: "technical",
+        priority: "medium",
         status: "open",
       });
 
-      setTitle("");
-      setDescription("");
-      setCategory("");
-      setPriority("");
-
-      onSuccess();
     } catch (err) {
-      console.log("Error submitting ticket");
+      console.error("Error:", err.response?.data || err.message);
+      alert("Submission failed. Check console for details.");
     }
-
-    setSubmitting(false);
   };
 
   return (
-    <div className="form-container">
-      <h3>Submit Ticket</h3>
+    <form onSubmit={handleSubmit}>
+      <h3>Create Ticket</h3>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Ticket Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+      <input
+        type="text"
+        name="title"
+        placeholder="Title"
+        value={formData.title}
+        onChange={handleChange}
+        required
+      />
 
-        <textarea
-          placeholder="Describe your issue..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-        />
+      <textarea
+        name="description"
+        placeholder="Description"
+        value={formData.description}
+        onChange={handleChange}
+        required
+      />
 
-        {loading && <p>Classifying...</p>}
+      <select
+        name="category"
+        value={formData.category}
+        onChange={handleChange}
+      >
+        <option value="technical">Technical</option>
+        <option value="billing">Billing</option>
+        <option value="general">General</option>
+      </select>
 
-        <input
-          type="text"
-          placeholder="Category"
-          value={category}
-          readOnly
-        />
+      <select
+        name="priority"
+        value={formData.priority}
+        onChange={handleChange}
+      >
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
 
-        <input
-          type="text"
-          placeholder="Priority"
-          value={priority}
-          readOnly
-        />
-
-        <button type="submit" disabled={submitting}>
-          {submitting ? "Submitting..." : "Submit Ticket"}
-        </button>
-      </form>
-    </div>
+      <button type="submit">Submit Ticket</button>
+    </form>
   );
 }
 
