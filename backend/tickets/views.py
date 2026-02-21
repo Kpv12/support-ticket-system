@@ -13,7 +13,6 @@ from .hf_llm import classify_ticket_hf
 
 
 class TicketViewSet(viewsets.ModelViewSet):
-
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
 
@@ -39,7 +38,6 @@ class TicketStatsView(APIView):
     def get(self, request):
 
         total_tickets = Ticket.objects.count()
-
         open_tickets = Ticket.objects.filter(status='open').count()
 
         per_day = (
@@ -53,27 +51,35 @@ class TicketStatsView(APIView):
             avg=Avg('count')
         )['avg'] or 0
 
-        priority_breakdown = dict(
+        priority_data = (
             Ticket.objects
             .values('priority')
             .annotate(count=Count('id'))
         )
 
-        category_breakdown = dict(
+        priority_breakdown = {
+            item['priority']: item['count']
+            for item in priority_data
+        }
+
+        category_data = (
             Ticket.objects
             .values('category')
             .annotate(count=Count('id'))
         )
 
-        data = {
+        category_breakdown = {
+            item['category']: item['count']
+            for item in category_data
+        }
+
+        return Response({
             "total_tickets": total_tickets,
             "open_tickets": open_tickets,
             "avg_tickets_per_day": round(avg_per_day, 2),
             "priority_breakdown": priority_breakdown,
             "category_breakdown": category_breakdown,
-        }
-
-        return Response(data)
+        })
 
 
 class TicketClassifyView(APIView):
