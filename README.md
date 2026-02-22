@@ -18,8 +18,36 @@ A full-stack support ticket management system built with Django REST Framework.
 - Containerization: Docker
 - API Style: REST
 
-## Setup Instructions
+# Setup Instructions
 
+1. Create .env file based on .env.example
+
+2. Run:
+   docker compose up --build
+
+3. Access:
+   Frontend: http://localhost:4173
+   Backend: http://localhost:8000
+
+# LLM Choice
+
+I used Hugging Face Inference API with a lightweight text-classification model
+for ticket categorization.
+
+Reason:
+- Simple integration with REST
+- Fast inference
+- No need for heavy GPU hosting
+- Cost-effective for small-scale deployment
+
+
+# Design Decisions
+
+- Django REST Framework for backend API
+- React + Vite for lightweight frontend
+- Dockerized for reproducibility
+- Rule-based fallback classifier if LLM fails
+- Environment variables for secure config
 ### Backend
 
 ```bash
